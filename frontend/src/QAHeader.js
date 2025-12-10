@@ -1,117 +1,122 @@
-import { useState } from "react";
 import TextField from "@mui/material/TextField";
 import Autocomplete from "@mui/material/Autocomplete";
 import { Typography } from "@mui/material";
 import Alert from "@mui/material/Alert";
-import Tooltip from "@mui/material/Tooltip";
-import Divider from "@mui/material/Divider";
 import Box from "@mui/material/Box";
-import IconButton from "@mui/material/IconButton";
-import InputIcon from "@mui/icons-material/Input";
-import InputAdornment from "@mui/material/InputAdornment";
-import OutlinedInput from "@mui/material/OutlinedInput";
 import PropTypes from "prop-types";
 
 export const QAHeader = (props) => {
-  const { setSelectedModel, setBaseUrl, modelList, selectedModel, baseUrl } =
+  const { setSelectedModel, modelList, selectedModel, baseUrl } =
     props;
-  const [url, setUrl] = useState(baseUrl ?? "");
-  const modelListDisabledText =
-    "Input a valid base url to enable model selection";
-
-  const handleKeyDown = (event) => {
-    if (event.key === "Enter") {
-      setBaseUrl(url);
-    }
-  };
 
   return (
-    <div>
+    <Box>
       <Typography
-        variant="overline"
-        sx={{ width: "100%", paddingBottom: "25px" }}
+        variant="h6"
+        sx={{
+          fontSize: "20px",
+          fontWeight: 600,
+          color: "#1d1d1f",
+          mb: 2.5,
+          letterSpacing: "-0.3px",
+        }}
       >
-        1. Input your base url here:
+        Model Configuration
       </Typography>
-      <OutlinedInput
-        id="standard-basic"
-        value={url}
-        sx={{ width: "100%" }}
-        name="Base Url"
-        onChange={(event) => setUrl(event.target?.value)}
-        onKeyDown={handleKeyDown}
-        placeholder="https://example.execute-api.example.amazonaws.com/example/"
-        endAdornment={
-          <InputAdornment position="end">
-            <IconButton
-              color="primary"
-              onClick={() => setBaseUrl(url)}
-              onMouseDown={() => setBaseUrl(url)}
-            >
-              <InputIcon />
-            </IconButton>
-          </InputAdornment>
-        }
-      />
-      <br></br>
-      <br></br>
-      <Divider />
-      <br></br>
-      <Typography
-        variant="overline"
-        sx={{ width: "100%", paddingBottom: "10px" }}
+      <Alert
+        severity="info"
+        icon={false}
+        sx={{
+          borderRadius: "12px",
+          mb: 3,
+          backgroundColor: "#f5f5f7",
+          border: "1px solid rgba(0, 0, 0, 0.06)",
+          color: "#1d1d1f",
+          "& .MuiAlert-message": {
+            fontSize: "15px",
+            padding: "4px 0",
+          },
+        }}
       >
-        2. Select a model
-      </Typography>
-      <Alert severity="info">
-        Make sure to check in your AWS console that you have access to the
-        selected model. Note: if no model is selected, the default model used
-        will be anthropic.claude-instant-v1. Check out the list of supported
-        models and regions{" "}
+        Using Claude 3 Haiku. Ensure you have access in AWS.{" "}
         <a
           href="https://docs.aws.amazon.com/bedrock/latest/userguide/knowledge-base-supported.html"
           target="_blank"
           rel="noreferrer"
+          style={{
+            color: "#06c",
+            textDecoration: "none",
+            fontWeight: 500,
+          }}
         >
-          here
+          View models
         </a>
       </Alert>
-      <br></br>
-      <Box sx={{ paddingBottom: "20px" }}>
-        <Tooltip title={modelList.length === 0 ? modelListDisabledText : null}>
-          <Autocomplete
-            disabled={!baseUrl}
-            includeInputInList
-            id="model-select"
-            autoComplete
-            options={modelList}
-            getOptionLabel={(option) => option.modelId ?? option}
-            renderOption={(props, option) => (
-              <Typography {...props} variant="standard">
-                {option.modelName} : {option.modelId}{" "}
-              </Typography>
-            )}
-            sx={{ width: "100%" }}
-            renderInput={(params) => (
-              <TextField {...params} label="Choose a Model" />
-            )}
-            defaultValue={null}
-            value={selectedModel?.modelId ?? null}
-            onChange={(event, value) => {
-              setSelectedModel(value);
+      <Autocomplete
+        disabled={!baseUrl}
+        includeInputInList
+        id="model-select"
+        autoComplete
+        options={modelList}
+        getOptionLabel={(option) => option.modelId ?? option}
+        renderOption={(props, option) => (
+          <Typography
+            {...props}
+            sx={{
+              fontSize: "17px",
+              color: "#1d1d1f",
+              padding: "10px 16px",
+            }}
+          >
+            {option.modelName} : {option.modelId}
+          </Typography>
+        )}
+        sx={{ width: "100%" }}
+        renderInput={(params) => (
+          <TextField
+            {...params}
+            label="AI Model"
+            sx={{
+              "& .MuiOutlinedInput-root": {
+                borderRadius: "12px",
+                fontSize: "17px",
+                backgroundColor: "#fafafa",
+                border: "1px solid rgba(0, 0, 0, 0.1)",
+                "&:hover": {
+                  backgroundColor: "#f5f5f5",
+                },
+                "&.Mui-focused": {
+                  backgroundColor: "#ffffff",
+                  border: "1px solid #06c",
+                },
+                "& fieldset": {
+                  border: "none",
+                },
+              },
+              "& .MuiInputLabel-root": {
+                color: "#86868b",
+                fontSize: "17px",
+                "&.Mui-focused": {
+                  color: "#06c",
+                },
+              },
             }}
           />
-        </Tooltip>
-      </Box>
-    </div>
+        )}
+        defaultValue={null}
+        value={selectedModel?.modelId ?? null}
+        onChange={(_event, value) => {
+          setSelectedModel(value);
+        }}
+      />
+    </Box>
   );
 };
 
 QAHeader.propTypes = {
   setSelectedModel: PropTypes.func.isRequired,
-  setBaseUrl: PropTypes.func.isRequired,
   modelList: PropTypes.array,
-  selectedModel: PropTypes.string,
+  selectedModel: PropTypes.object,
   baseUrl: PropTypes.string,
 };
 

@@ -16,8 +16,8 @@ import {modelList} from "./RAGModels"
 
 const App = (props) => {
   const [history, setHistory] = useState([]);
-  const [selectedModel, setSelectedModel] = useState(undefined);
-  const [baseUrl, setBaseUrl] = useState(undefined);
+  const [selectedModel, setSelectedModel] = useState(modelList[0]);
+  const [baseUrl] = useState(process.env.REACT_APP_BASE_URL);
   const [question, setQuestion] = useState('');
   const [spinner, setSpinner] = useState(false);
   const [sessionId, setSessionId] = useState(undefined);
@@ -142,21 +142,52 @@ const App = (props) => {
         justifyContent: "center",
         alignItems: "center",
         minHeight: "100vh",
-        padding: "30px",
-        backgroundColor: "#f0f0f0",
+        padding: "40px 20px",
+        backgroundColor: "#f5f5f7",
       }}
     >
       <Paper
+        elevation={0}
         sx={{
-          padding: 8,
-          maxWidth: 600,
+          padding: { xs: 4, md: 6 },
+          maxWidth: 920,
+          width: "100%",
+          borderRadius: "18px",
+          backgroundColor: "#ffffff",
+          border: "1px solid rgba(0, 0, 0, 0.06)",
+          boxShadow: "0 4px 16px rgba(0, 0, 0, 0.08)",
         }}
       >
-        <Typography variant="h5" sx={{ textAlign: "center" }}>
-          AWS Q&A
-        </Typography>
-        <br></br>
-        <br></br>
+        <Box
+          sx={{
+            textAlign: "center",
+            mb: 5,
+            pb: 4,
+            borderBottom: "1px solid rgba(0, 0, 0, 0.08)",
+          }}
+        >
+          <Typography
+            variant="h4"
+            sx={{
+              fontWeight: 600,
+              color: "#1d1d1f",
+              mb: 1,
+              letterSpacing: "-0.5px",
+            }}
+          >
+            Email Assistant
+          </Typography>
+          <Typography
+            variant="body1"
+            sx={{
+              color: "#86868b",
+              fontSize: "17px",
+              fontWeight: 400,
+            }}
+          >
+            Draft professional customer service emails with AI
+          </Typography>
+        </Box>
         <Box
           sx={{
             display: "flex",
@@ -166,66 +197,127 @@ const App = (props) => {
           }}
         >
           <QAHeader
-            setBaseUrl={setBaseUrl}
             baseUrl={baseUrl}
             modelList={modelList}
             setSelectedModel={handleChangeModel}
             selectedModel={selectedModel}
           />
-          <Divider />
+          <Divider sx={{ my: 4, borderColor: "rgba(0, 0, 0, 0.08)" }} />
 
           <Box
             sx={{
               display: "flex",
               justifyContent: "space-between",
               alignItems: "center",
-              paddingBottom: "10px",
-              paddingTop: "20px",
+              mb: 3,
             }}
           >
-            <Typography variant="overline">3. Ask a question:</Typography>
+            <Typography
+              variant="h6"
+              sx={{
+                fontSize: "20px",
+                fontWeight: 600,
+                color: "#1d1d1f",
+                letterSpacing: "-0.3px",
+              }}
+            >
+              Conversation
+            </Typography>
             <Button
               disabled={history.length === 0}
               startIcon={<DeleteIcon />}
               onClick={onClearHistory}
+              variant="text"
+              size="small"
+              sx={{
+                textTransform: "none",
+                color: "#06c",
+                fontSize: "15px",
+                fontWeight: 400,
+                "&:hover": {
+                  backgroundColor: "rgba(0, 102, 204, 0.08)",
+                },
+                "&:disabled": {
+                  color: "#86868b",
+                },
+              }}
             >
-              Clear History
+              Clear
             </Button>
           </Box>
           <Chat history={history} />
-          <br></br>
-          {spinner ? (
-            <Box sx={{ justifyContent: "center", padding: "20px" }}>
+          {spinner && (
+            <Box sx={{ display: "flex", justifyContent: "center", py: 3 }}>
               <LoadingSpinner />
             </Box>
-          ) : (
-            <br></br>
           )}
         </Box>
         <Box
           sx={{
             display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            paddingBottom: "20px",
-            paddingTop: "20px",
+            gap: 2,
+            alignItems: "flex-end",
+            mt: 4,
+            pt: 4,
+            borderTop: "1px solid rgba(0, 0, 0, 0.08)",
           }}
         >
           <TextField
             disabled={spinner || !baseUrl}
-            variant="standard"
-            label="Enter your question here"
+            variant="outlined"
+            label="Customer Inquiry"
+            placeholder="How do I make a lending offer?"
             value={question}
             onChange={(e) => setQuestion(e.target?.value)}
             onKeyDown={handleKeyDown}
-            sx={{ width: "95%" }}
+            fullWidth
+            multiline
+            maxRows={4}
+            sx={{
+              "& .MuiOutlinedInput-root": {
+                borderRadius: "12px",
+                fontSize: "17px",
+                backgroundColor: "#fafafa",
+                border: "1px solid rgba(0, 0, 0, 0.1)",
+                "&:hover": {
+                  backgroundColor: "#f5f5f5",
+                },
+                "&.Mui-focused": {
+                  backgroundColor: "#ffffff",
+                  border: "1px solid #06c",
+                },
+                "& fieldset": {
+                  border: "none",
+                },
+              },
+              "& .MuiInputLabel-root": {
+                color: "#86868b",
+                fontSize: "17px",
+                "&.Mui-focused": {
+                  color: "#06c",
+                },
+              },
+            }}
           />
           <IconButton
             disabled={spinner || !baseUrl}
             onClick={handleSendQuestion}
-            color="primary"
+            sx={{
+              bgcolor: "#06c",
+              color: "white",
+              width: 44,
+              height: 44,
+              borderRadius: "50%",
+              "&:hover": {
+                bgcolor: "#0077ed",
+              },
+              "&:disabled": {
+                bgcolor: "#d2d2d7",
+                color: "#86868b",
+              },
+            }}
           >
-            <SendIcon />
+            <SendIcon sx={{ fontSize: 20 }} />
           </IconButton>
         </Box>
         {hasWebDataSource ? (

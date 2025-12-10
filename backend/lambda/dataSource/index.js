@@ -20,7 +20,7 @@ const createDataSource = async () => {
               seedUrls: [
                 // SeedUrls
                 {
-                  url: "https://www.aboutamazon.com/news/amazon-offices",
+                  url: "https://silverbullion.com.sg/",
                 },
               ],
             },
@@ -29,11 +29,6 @@ const createDataSource = async () => {
             crawlerLimits: {
               rateLimit: 50,
             },
-            scope: "HOST_ONLY",
-            exclusionFilters: [".*plants.*"],
-            inclusionFilters: [
-              "^https?://www.aboutamazon.com/news/amazon-offices/.*$",
-            ],
           },
         },
       },
