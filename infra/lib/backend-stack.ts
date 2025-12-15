@@ -146,7 +146,7 @@ export class BackendStack extends Stack {
 
     // POST /docs - Query endpoint
     apiGateway.root
-      .addResource("docs")
+      .addResource("ai-draft")
       .addMethod("POST", new apigw.LambdaIntegration(lambdaQuery));
 
     // Usage plan for rate limiting

@@ -28,38 +28,39 @@ const App = (props) => {
   });
   const [hasWebDataSource, setHasWebDataSource] = useState(false);
 
-  useEffect(() => {
-    if (!baseUrl) {
-      return;
-    }
-    const getWebSourceConfiguration = async () => {
-      fetch(baseUrl + "urls", {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      })
-        .then((res) => res.json())
-        .then((data) => {
-          setSourceUrlInfo({
-            exclusionFilters: data.exclusionFilters ?? [],
-            inclusionFilters: data.inclusionFilters ?? [],
-            seedUrlList: data.seedUrlList ?? [],
-          });
-          setHasWebDataSource(true);
-        })
-        .catch((err) => {
-          console.log("err", err);
-        });
+  // Web data source functionality disabled - backend doesn't support it yet
+  // useEffect(() => {
+  //   if (!baseUrl) {
+  //     return;
+  //   }
+  //   const getWebSourceConfiguration = async () => {
+  //     fetch(baseUrl + "urls", {
+  //       method: "GET",
+  //       headers: {
+  //         "Content-Type": "application/json",
+  //       },
+  //     })
+  //       .then((res) => res.json())
+  //       .then((data) => {
+  //         setSourceUrlInfo({
+  //           exclusionFilters: data.exclusionFilters ?? [],
+  //           inclusionFilters: data.inclusionFilters ?? [],
+  //           seedUrlList: data.seedUrlList ?? [],
+  //         });
+  //         setHasWebDataSource(true);
+  //       })
+  //       .catch((err) => {
+  //         console.log("err", err);
+  //       });
 
-    };
-    getWebSourceConfiguration();
-  }, [baseUrl]);
+  //   };
+  //   getWebSourceConfiguration();
+  // }, [baseUrl]);
 
   const handleSendQuestion = () => {
     setSpinner(true);
 
-    fetch(baseUrl + "docs", {
+    fetch(baseUrl + "rag/query", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -106,29 +107,30 @@ const App = (props) => {
 
   const onClearHistory = () => setHistory([]);
 
-  const handleUpdateUrls = async (
-    urls,
-    newExclusionFilters,
-    newInclusionFilters
-  ) => {
-    try {
-      const response = await fetch(baseUrl + "web-urls", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          urlList: [...new Set(urls)],
-          exclusionFilters: [...new Set(newExclusionFilters)],
-          inclusionFilters: [...new Set(newInclusionFilters)],
-        }),
-      });
-      return !!response.ok;
-    } catch (error) {
-      console.log("Error:", error);
-      return false;
-    }
-  };
+  // Web URL update functionality disabled - backend doesn't support it yet
+  // const handleUpdateUrls = async (
+  //   urls,
+  //   newExclusionFilters,
+  //   newInclusionFilters
+  // ) => {
+  //   try {
+  //     const response = await fetch(baseUrl + "web-urls", {
+  //       method: "POST",
+  //       headers: {
+  //         "Content-Type": "application/json",
+  //       },
+  //       body: JSON.stringify({
+  //         urlList: [...new Set(urls)],
+  //         exclusionFilters: [...new Set(newExclusionFilters)],
+  //         inclusionFilters: [...new Set(newInclusionFilters)],
+  //       }),
+  //     });
+  //     return !!response.ok;
+  //   } catch (error) {
+  //     console.log("Error:", error);
+  //     return false;
+  //   }
+  // };
 
   const handleChangeModel = (model) => {
     setSelectedModel(model);
@@ -320,7 +322,8 @@ const App = (props) => {
             <SendIcon sx={{ fontSize: 20 }} />
           </IconButton>
         </Box>
-        {hasWebDataSource ? (
+        {/* Web data source form disabled - backend doesn't support it yet */}
+        {/* {hasWebDataSource ? (
           <Box sx={{ paddingTop: "15px" }}>
             <UrlSourcesForm
               exclusionFilters={sourceUrlInfo.exclusionFilters}
@@ -331,7 +334,7 @@ const App = (props) => {
               handleUpdateUrls={handleUpdateUrls}
             />
           </Box>
-        ) : null}
+        ) : null} */}
       </Paper>
     </Box>
   );

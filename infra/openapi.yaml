@@ -1,0 +1,274 @@
+openapi: 3.0.3
+info:
+  title: Customer Service Email Draft API
+  description: |
+    RAG-powered API for generating professional customer service email replies using Amazon Bedrock Knowledge Base.
+    This endpoint retrieves relevant information from a knowledge base and generates appropriate email responses.
+  version: 1.0.0
+  contact:
+    name: API Support
+    email: support@example.com
+
+servers:
+  - url: https://api.example.com
+    description: Production server
+  - url: http://localhost:3000
+    description: Development server
+
+tags:
+  - name: Query
+    description: Knowledge base query and response generation
+
+paths:
+  /ai-draft:
+    post:
+      tags:
+        - Query
+      summary: Generate customer service email draft
+      description: |
+        Generates a professional customer service email response based on a customer inquiry.
+        Uses RAG (Retrieval-Augmented Generation) to retrieve relevant information from the knowledge base
+        and generates a contextual, professional email reply.
+      operationId: generateEmailDraft
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - question
+              properties:
+                question:
+                  type: string
+                  description: The customer inquiry that needs a reply draft
+                  example: "How do I place an order for silver bars?"
+                  minLength: 1
+                requestSessionId:
+                  type: string
+                  description: Session identifier for tracking requests across multiple interactions
+                  example: "session-abc-123"
+                modelId:
+                  type: string
+                  description: Amazon Bedrock model ID to use for generation
+                  default: "anthropic.claude-3-haiku-20240307-v1:0"
+                  example: "anthropic.claude-3-haiku-20240307-v1:0"
+                  enum:
+                    - anthropic.claude-3-haiku-20240307-v1:0
+                    - anthropic.claude-3-sonnet-20240229-v1:0
+                    - anthropic.claude-3-opus-20240229-v1:0
+                conversationHistory:
+                  type: array
+                  description: Optional conversation history to maintain context and continuity across multiple interactions
+                  items:
+                    type: object
+                    required:
+                      - role
+                      - content
+                    properties:
+                      role:
+                        type: string
+                        description: The role of the message sender
+                        enum:
+                          - customer
+                          - agent
+                        example: "customer"
+                      content:
+                        type: string
+                        description: The message content
+                        example: "I received my order but one item is missing"
+                  example:
+                    - role: "customer"
+                      content: "I placed an order last week, order #12345"
+                    - role: "agent"
+                      content: "Thanks for contacting us! I can see your order #12345 here. It was shipped yesterday and should arrive within 2-3 business days."
+                    - role: "customer"
+                      content: "Great, but I need to change the delivery address"
+            examples:
+              simpleQuery:
+                summary: Simple customer inquiry
+                value:
+                  question: "How do I place an order?"
+              withSession:
+                summary: Query with session tracking
+                value:
+                  question: "What are your shipping options?"
+                  requestSessionId: "session-123-abc"
+              withCustomModel:
+                summary: Query with specific model
+                value:
+                  question: "Can you explain your storage fees?"
+                  requestSessionId: "session-456-def"
+                  modelId: "anthropic.claude-3-sonnet-20240229-v1:0"
+              withConversationHistory:
+                summary: Query with conversation history
+                value:
+                  question: "Can I change the delivery address?"
+                  requestSessionId: "session-789-ghi"
+                  conversationHistory:
+                    - role: "customer"
+                      content: "I placed an order last week, order #12345"
+                    - role: "agent"
+                      content: "Thanks for contacting us! I can see your order #12345 here. It was shipped yesterday and should arrive within 2-3 business days."
+      responses:
+        "200":
+          description: Successfully generated email draft
+          headers:
+            Access-Control-Allow-Origin:
+              schema:
+                type: string
+                example: "*"
+              description: CORS header
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  response:
+                    type: string
+                    description: Complete email draft starting with a greeting
+                    example: "Hi {{CUSTOMER_NAME}},\n\nYou can place an order by visiting our website and browsing our product catalog. Simply select the items you'd like to purchase, add them to your cart, and proceed to checkout. You'll need to create an account or log in if you already have one.\n\nLet me know if you have any other questions!"
+                  citation:
+                    type: string
+                    description: URL to the source document used for the response (S3 or web URL)
+                    example: "s3://knowledge-base-bucket/docs/ordering-guide.pdf"
+                  sessionId:
+                    type: string
+                    description: Echo of the request session ID
+                    example: "session-123-abc"
+              examples:
+                successResponse:
+                  summary: Successful email generation
+                  value:
+                    response: "Hi {{CUSTOMER_NAME}},\n\nYou can place an order by visiting our website and browsing our product catalog. Simply select the items you'd like to purchase, add them to your cart, and proceed to checkout.\n\nLet me know if you have any other questions!"
+                    citation: "s3://knowledge-base-bucket/docs/ordering-guide.pdf"
+                    sessionId: "session-123-abc"
+                noRelevantKnowledge:
+                  summary: No relevant knowledge found
+                  value:
+                    response: "Hi {{CUSTOMER_NAME}},\n\nI don't have specific information about this in our knowledge base. I'd recommend reaching out to our support team directly for the most accurate answer.\n\nBest regards"
+                    citation: ""
+                    sessionId: "session-456-def"
+        "400":
+          description: Bad request - missing or invalid parameters
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  statusCode:
+                    type: integer
+                    example: 400
+                  error:
+                    type: string
+                    example: "Bad Request"
+                  message:
+                    type: string
+                    example: "Missing required parameter: question"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  statusCode:
+                    type: integer
+                    example: 500
+                  error:
+                    type: string
+                    example: "Internal Server Error"
+                  message:
+                    type: string
+                    example: "Error invoking Bedrock model"
+        "503":
+          description: Service unavailable - Bedrock service error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  statusCode:
+                    type: integer
+                    example: 503
+                  error:
+                    type: string
+                    example: "Service Unavailable"
+                  message:
+                    type: string
+                    example: "Bedrock Knowledge Base temporarily unavailable"
+
+components:
+  schemas:
+    QueryRequest:
+      type: object
+      required:
+        - question
+      properties:
+        question:
+          type: string
+          description: The customer inquiry
+          minLength: 1
+        requestSessionId:
+          type: string
+          description: Session identifier
+        modelId:
+          type: string
+          description: Bedrock model ID
+          default: "anthropic.claude-3-haiku-20240307-v1:0"
+        conversationHistory:
+          type: array
+          description: Optional conversation history
+          items:
+            $ref: "#/components/schemas/ConversationMessage"
+
+    QueryResponse:
+      type: object
+      properties:
+        response:
+          type: string
+          description: Generated email draft
+        citation:
+          type: string
+          description: Source document URL
+        sessionId:
+          type: string
+          description: Session identifier
+
+    ErrorResponse:
+      type: object
+      properties:
+        statusCode:
+          type: integer
+        error:
+          type: string
+        message:
+          type: string
+
+    ConversationMessage:
+      type: object
+      required:
+        - role
+        - content
+      properties:
+        role:
+          type: string
+          description: The role of the message sender
+          enum:
+            - customer
+            - agent
+          example: "customer"
+        content:
+          type: string
+          description: The message content
+          example: "I have a question about my order"
+
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+      description: API key for authentication (if required)
+
+security:
+  - ApiKeyAuth: []

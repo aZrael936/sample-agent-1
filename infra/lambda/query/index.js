@@ -67,7 +67,7 @@ exports.handler = middy()
   .use(httpJsonBodyParser())
   .use(httpHeaderNormalizer())
   .handler(async (event, context) => {
-    const { question, requestSessionId, modelId } = event.body;
+    const { question, requestSessionId, modelId, conversationHistory } = event.body;
     try {
       console.log("model", modelId);
       const selectedModelId =
@@ -120,9 +120,25 @@ exports.handler = middy()
         }
       }
 
-      // Step 3: Build user prompt with context
+      // Step 3: Build user prompt with context and conversation history
+      let conversationHistorySection = '';
+      if (conversationHistory && conversationHistory.length > 0) {
+        const historyText = conversationHistory
+          .map((msg) => {
+            const role = msg.role === 'customer' ? 'Customer' : 'CS Rep';
+            return `[${role}]: ${msg.content}`;
+          })
+          .join('\n\n');
+
+        conversationHistorySection = `<conversation_history>
+${historyText}
+</conversation_history>
+
+`;
+      }
+
       const userPrompt = context
-        ? `<company_knowledge>
+        ? `${conversationHistorySection}<company_knowledge>
 ${context}
 </company_knowledge>
 
@@ -130,12 +146,12 @@ ${context}
 ${question}
 </customer_inquiry>
 
-Draft an email reply to answer the customer's inquiry using the company knowledge provided above.`
-        : `<customer_inquiry>
+Draft an email reply to answer the customer's inquiry using the company knowledge provided above.${conversationHistory && conversationHistory.length > 0 ? ' Consider the conversation history to maintain context and continuity.' : ''}`
+        : `${conversationHistorySection}<customer_inquiry>
 ${question}
 </customer_inquiry>
 
-The company knowledge base does not contain information relevant to this inquiry. Draft an appropriate email reply.`;
+The company knowledge base does not contain information relevant to this inquiry. Draft an appropriate email reply.${conversationHistory && conversationHistory.length > 0 ? ' Consider the conversation history to maintain context.' : ''}`;
 
       // Step 4: Call InvokeModel with response prefilling to enforce format
       console.log("Invoking model with prefilled response...");
